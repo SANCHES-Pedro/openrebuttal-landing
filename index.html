@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>OpenRebuttal – AI-Powered Rebuttal Drafts for OpenReview</title>
+  <meta name="description" content="Turn OpenReview chaos into a clean, actionable rebuttal plan. Fetch reviews, decompose arguments, classify issues, and get AI-drafted replies—free to try." />
+  <meta property="og:title" content="OpenRebuttal" />
+  <meta property="og:description" content="From review dump to ready-to-edit rebuttal—free to try." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="https://dummyimage.com/1200x630/1935F0/ffffff&text=OpenRebuttal" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧠</text></svg>">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1935F0',
+            primaryDark: '#0F248F',
+            primaryLight: '#E6EBFF',
+            accent: '#3AF2D8',
+            neutral900: '#0E0F12',
+            neutral700: '#3A3C44',
+            neutral500: '#6C6F77',
+            neutral300: '#C6C8CE',
+            neutral100: '#F3F4F6'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Space Grotesk', 'Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          boxShadow: {
+            card: '0 2px 10px rgba(0,0,0,0.08)',
+            hover: '0 8px 30px rgba(0,0,0,0.12)'
+          },
+          borderRadius: {
+            pill: '9999px'
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* Simple glass effect */
+    .glass {
+      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.08);
+    }
+    /* Reduce motion respect */
+    @media (prefers-reduced-motion: reduce) {
+      .animate-fade-up,
+      .animate-fade {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+    }
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-up { animation: fade-up 0.6s ease both; }
+    .animate-fade { animation: fade-up 0.9s ease both; }
+  </style>
+</head>
+
+<body class="bg-neutral100 text-neutral900 font-sans antialiased">
+
+  <!-- ====== HEADER ====== -->
+  <header class="fixed top-0 left-0 right-0 z-40">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="flex items-center justify-between py-4">
+        <a href="#" class="flex items-center gap-2 font-display text-xl font-semibold text-neutral900">
+          <span class="inline-block w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">OR</span>
+          OpenRebuttal
+        </a>
+
+        <nav class="hidden md:flex items-center gap-8 text-sm font-medium">
+          <a href="#features" class="hover:text-primary transition-colors">Features</a>
+          <a href="#how" class="hover:text-primary transition-colors">How it works</a>
+          <a href="#privacy" class="hover:text-primary transition-colors">Privacy</a>
+          <a href="#faq" class="hover:text-primary transition-colors">FAQ</a>
+        </nav>
+
+        <div class="hidden md:flex items-center gap-3">
+          <a href="#sample" class="text-sm px-4 py-2 rounded-md border border-primary text-primary hover:bg-primaryLight transition">See Sample</a>
+          <a href="#try" class="text-sm px-4 py-2 rounded-md bg-primary text-white hover:bg-primaryDark transition">Try Free</a>
+        </div>
+
+        <button id="mobileBtn" class="md:hidden w-9 h-9 flex items-center justify-center rounded-md bg-primary text-white">
+          <!-- Menu icon -->
+          <svg id="menuIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+          <!-- Close icon -->
+          <svg id="closeIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile nav -->
+    <div id="mobileNav" class="md:hidden hidden bg-white border-t border-neutral300">
+      <nav class="px-6 py-4 flex flex-col gap-4 text-sm font-medium">
+        <a href="#features" class="hover:text-primary transition-colors">Features</a>
+        <a href="#how" class="hover:text-primary transition-colors">How it works</a>
+        <a href="#privacy" class="hover:text-primary transition-colors">Privacy</a>
+        <a href="#faq" class="hover:text-primary transition-colors">FAQ</a>
+        <a href="#sample" class="text-left px-4 py-2 rounded-md border border-primary text-primary hover:bg-primaryLight transition">See Sample</a>
+        <a href="#try" class="text-left px-4 py-2 rounded-md bg-primary text-white hover:bg-primaryDark transition">Try Free</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ====== HERO ====== -->
+  <section class="relative overflow-hidden pt-32 pb-28 bg-white">
+    <!-- background gradient -->
+    <div class="absolute inset-0 -z-10 bg-gradient-to-br from-primaryLight/60 via-white to-accent/10"></div>
+
+    <div class="max-w-7xl mx-auto px-6 lg:px-8 grid lg:grid-cols-2 gap-16 items-center">
+      <div class="animate-fade-up">
+        <h1 class="font-display text-5xl lg:text-6xl font-semibold leading-tight text-neutral900">
+          Turn OpenReview Chaos into a Clean, Actionable Rebuttal Plan.
+        </h1>
+        <p class="mt-6 text-lg text-neutral700 max-w-xl">
+          Paste your OpenReview link. We fetch reviews, break them down into points, classify them, and draft first-pass rebuttals—exported to a collaborative spreadsheet. Free to try.
+        </p>
+
+        <div class="mt-8 flex flex-wrap gap-4">
+          <a href="#try" class="px-6 py-3 rounded-md bg-primary text-white font-medium hover:bg-primaryDark transition shadow-card hover:shadow-hover">Try Free</a>
+          <a href="#sample" class="px-6 py-3 rounded-md border border-primary text-primary font-medium hover:bg-primaryLight transition">See Sample Sheet</a>
+        </div>
+
+        <p class="mt-4 text-xs text-neutral500">No credit card. You own your data.</p>
+      </div>
+
+      <!-- Hero visual -->
+      <div class="relative animate-fade">
+        <!-- simple mock animation using layered boxes -->
+        <div class="relative w-full aspect-[4/3] rounded-xl overflow-hidden shadow-card">
+          <div class="absolute inset-0 bg-white/80 backdrop-blur-md"></div>
+          <div class="absolute inset-0 p-6 flex flex-col gap-3">
+            <!-- Before block -->
+            <div class="bg-neutral100 rounded-md p-4 border border-neutral300 text-xs font-mono text-neutral700">
+              <p>// Reviewer 1: The ablation study is missing and...</p>
+              <p>// Reviewer 2: I’m concerned about dataset biases...</p>
+              <p>// ...long paragraph continues...</p>
+            </div>
+            <!-- Arrow -->
+            <div class="flex justify-center">
+              <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+            <!-- After block (table-like) -->
+            <div class="bg-white rounded-md p-0 border border-neutral300 overflow-hidden text-xs">
+              <div class="grid grid-cols-4 bg-neutral100 font-medium text-neutral700">
+                <div class="p-2">Point</div>
+                <div class="p-2">Tag</div>
+                <div class="p-2">AI Draft</div>
+                <div class="p-2">Owner</div>
+              </div>
+              <div class="grid grid-cols-4 border-t border-neutral300">
+                <div class="p-2">Missing Ablation</div>
+                <div class="p-2">Experiments</div>
+                <div class="p-2 truncate">We added an ablation in Sec. 4.2 showing ...</div>
+                <div class="p-2">Alice</div>
+              </div>
+              <div class="grid grid-cols-4 border-t border-neutral300 bg-neutral100/60">
+                <div class="p-2">Bias Concern</div>
+                <div class="p-2">Methodology</div>
+                <div class="p-2 truncate">Our dataset selection mitigates bias by...</div>
+                <div class="p-2">Bob</div>
+              </div>
+              <div class="grid grid-cols-4 border-t border-neutral300">
+                <div class="p-2">Clarity of Sec. 3</div>
+                <div class="p-2">Clarity</div>
+                <div class="p-2 truncate">We’ve rewritten Sec. 3 to clarify the loss ...</div>
+                <div class="p-2">You</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- subtle glow -->
+        <div class="absolute -inset-6 -z-10 bg-gradient-to-tr from-primary/20 via-accent/10 to-transparent blur-2xl opacity-60"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== PAIN POINTS ====== -->
+  <section class="py-24 bg-white" id="pain">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 text-center">
+      <h2 class="font-display text-3xl md:text-4xl font-semibold text-neutral900">The Rebuttal Crunch is Real</h2>
+      <p class="mt-4 text-neutral700 max-w-2xl mx-auto">Dense paragraphs, repeated issues, tight deadlines, and too many cooks. You need structure—fast.</p>
+
+      <div class="mt-12 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="glass bg-white/70 rounded-xl p-6 shadow-card hover:shadow-hover transition">
+          <div class="w-10 h-10 rounded-md bg-primaryLight flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+          <h3 class="font-semibold mb-2">Buried Points</h3>
+          <p class="text-sm text-neutral700">Arguments hidden in multi-paragraph rants.</p>
+        </div>
+
+        <div class="glass bg-white/70 rounded-xl p-6 shadow-card hover:shadow-hover transition">
+          <div class="w-10 h-10 rounded-md bg-primaryLight flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 5h18M3 12h18M3 19h18" />
+            </svg>
+          </div>
+          <h3 class="font-semibold mb-2">Repetition Everywhere</h3>
+          <p class="text-sm text-neutral700">Same concern, three reviewers. No easy merge.</p>
+        </div>
+
+        <div class="glass bg-white/70 rounded-xl p-6 shadow-card hover:shadow-hover transition">
+          <div class="w-10 h-10 rounded-md bg-primaryLight flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3" />
+            </svg>
+          </div>
+          <h3 class="font-semibold mb-2">Time Sink</h3>
+          <p class="text-sm text-neutral700">Copy/pasting into sheets instead of crafting answers.</p>
+        </div>
+
+        <div class="glass bg-white/70 rounded-xl p-6 shadow-card hover:shadow-hover transition">
+          <div class="w-10 h-10 rounded-md bg-primaryLight flex items-center justify-center mb-4">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 class="font-semibold mb-2">Missed Points</h3>
+          <p class="text-sm text-neutral700">No structure = things slip through the cracks.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FEATURES ====== -->
+  <section class="py-24 bg-neutral100" id="features">
+    <div class="max-w-6xl mx-auto px-6 lg:px-8">
+      <h2 class="font-display text-3xl md:text-4xl font-semibold text-center text-neutral900">What OpenRebuttal Does for You</h2>
+      <p class="mt-4 text-neutral700 text-center max-w-2xl mx-auto">Automate the grunt work. Focus on strategy and clarity.</p>
+
+      <div class="mt-16 grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- Feature card -->
+        <div class="bg-white rounded-xl p-8 shadow-card hover:shadow-hover transition">
+          <span class="inline-block mb-4 p-3 rounded-md bg-primaryLight text-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </span>
+          <h3 class="font-semibold text-lg mb-2">Instant Extraction</h3>
+          <p class="text-sm text-neutral700">Pull PDFs and reviews directly from your OpenReview link—no manual scraping.</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-card hover:shadow-hover transition">
+          <span class="inline-block mb-4 p-3 rounded-md bg-primaryLight text-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h7" />
+            </svg>
+          </span>
+          <h3 class="font-semibold text-lg mb-2">Argument Decomposition</h3>
+          <p class="text-sm text-neutral700">Splits reviews into atomic points so nothing slips through.</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-card hover:shadow-hover transition">
+          <span class="inline-block mb-4 p-3 rounded-md bg-primaryLight text-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 7h18M3 12h18M3 17h18" />
+            </svg>
+          </span>
+          <h3 class="font-semibold text-lg mb-2">Smart Classification</h3>
+          <p class="text-sm text-neutral700">Tags each point (experiments, clarity, novelty, etc.) so you can prioritize fast.</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-card hover:shadow-hover transition">
+          <span class="inline-block mb-4 p-3 rounded-md bg-primaryLight text-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 16h8M8 12h8m-9 8h10a2 2 0 002-2V6a2 2 0 00-2-2H7a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </span>
+          <h3 class="font-semibold text-lg mb-2">AI Drafted Replies</h3>
+          <p class="text-sm text-neutral700">First-pass rebuttals for each point. You edit, approve, or discard.</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-card hover:shadow-hover transition">
+          <span class="inline-block mb-4 p-3 rounded-md bg-primaryLight text-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7 8h10M7 12h4m-2 8a9 9 0 110-18 9 9 0 010 18z" />
+            </svg>
+          </span>
+          <h3 class="font-semibold text-lg mb-2">Collaboration Ready</h3>
+          <p class="text-sm text-neutral700">Export to CSV/Excel/Sheets with columns for status, assignee, final response.</p>
+        </div>
+
+        <div class="bg-white rounded-xl p-8 shadow-card hover:shadow-hover transition">
+          <span class="inline-block mb-4 p-3 rounded-md bg-primaryLight text-primary">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 3a1 1 0 011 1v2a1 1 0 11-2 0V4a1 1 0 011-1zm6.36 2.64a1 1 0 010 1.41l-1.42 1.42a1 1 0 01-1.41-1.42l1.42-1.41a1 1 0 011.41 0zM21 11a1 1 0 01-1 1h-2a1 1 0 110-2h2a1 1 0 011 1zm-2.64 6.36a1 1 0 00-1.41 0l-1.42 1.41a1 1 0 101.42 1.42l1.41-1.42a1 1 0 000-1.41zM13 19a1 1 0 00-2 0v2a1 1 0 002 0v-2zM5.64 17.36a1 1 0 00-1.41 1.41l1.41 1.42a1 1 0 101.42-1.42l-1.42-1.41zM4 11a1 1 0 000 2H2a1 1 0 100-2h2zM6.34 6.34a1 1 0 00-1.41 0L3.5 7.76a1 1 0 101.41 1.41l1.42-1.41a1 1 0 000-1.42z"/>
+            </svg>
+          </span>
+          <h3 class="font-semibold text-lg mb-2">Insightful Summary</h3>
+          <p class="text-sm text-neutral700">Aggregate stats: recurring themes, reviewer sentiment, section heatmaps.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== HOW IT WORKS ====== -->
+  <section class="py-24 bg-white" id="how">
+    <div class="max-w-6xl mx-auto px-6 lg:px-8">
+      <h2 class="font-display text-3xl md:text-4xl font-semibold text-center text-neutral900">From Link to Spreadsheet in 5 Steps</h2>
+      <p class="mt-4 text-neutral700 text-center max-w-2xl mx-auto">A short pipeline, a big relief.</p>
+
+      <div class="mt-16 grid md:grid-cols-5 gap-8">
+        <!-- Step -->
+        <div class="flex flex-col items-center text-center">
+          <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-lg font-semibold">1</div>
+          <h4 class="mt-4 font-semibold text-neutral900">Paste Your URL</h4>
+          <p class="mt-2 text-sm text-neutral700">We fetch PDF + all reviews (auth when needed).</p>
+        </div>
+        <div class="flex flex-col items-center text-center">
+          <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-lg font-semibold">2</div>
+          <h4 class="mt-4 font-semibold text-neutral900">AI Parses & Segments</h4>
+          <p class="mt-2 text-sm text-neutral700">Each comment → concise standalone points.</p>
+        </div>
+        <div class="flex flex-col items-center text-center">
+          <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-lg font-semibold">3</div>
+          <h4 class="mt-4 font-semibold text-neutral900">Auto Tagging & Grouping</h4>
+          <p class="mt-2 text-sm text-neutral700">Methodology, experiments, clarity—your taxonomy.</p>
+        </div>
+        <div class="flex flex-col items-center text-center">
+          <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-lg font-semibold">4</div>
+          <h4 class="mt-4 font-semibold text-neutral900">Draft Rebuttals Generated</h4>
+          <p class="mt-2 text-sm text-neutral700">Smart starting points. You fine-tune.</p>
+        </div>
+        <div class="flex flex-col items-center text-center">
+          <div class="w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center text-lg font-semibold">5</div>
+          <h4 class="mt-4 font-semibold text-neutral900">Export & Collaborate</h4>
+          <p class="mt-2 text-sm text-neutral700">CSV/Excel/Sheets with ownership & status columns.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== DEMO / SAMPLE ====== -->
+  <section class="py-24 bg-neutral100" id="sample">
+    <div class="max-w-6xl mx-auto px-6 lg:px-8">
+      <div class="lg:flex lg:items-center lg:justify-between gap-12">
+        <div class="lg:w-1/2">
+          <h2 class="font-display text-3xl md:text-4xl font-semibold text-neutral900">See a Sample Spreadsheet</h2>
+          <p class="mt-4 text-neutral700 max-w-xl">Curious how it looks? Check a redacted example with AI drafts, tags, and collaboration columns.</p>
+          <div class="mt-8 flex gap-4">
+            <a href="#" class="px-5 py-3 rounded-md bg-primary text-white font-medium hover:bg-primaryDark transition">Open Sample</a>
+            <a href="#try" class="px-5 py-3 rounded-md border border-primary text-primary font-medium hover:bg-primaryLight transition">Try Free</a>
+          </div>
+        </div>
+        <div class="lg:w-1/2 mt-12 lg:mt-0 relative">
+          <!-- Placeholder screenshot -->
+          <div class="rounded-xl overflow-hidden shadow-card hover:shadow-hover transition bg-white">
+            <img src="https://dummyimage.com/960x540/F3F4F6/6C6F77&text=Sample+Spreadsheet+Preview" alt="Sample Spreadsheet" class="w-full h-auto">
+          </div>
+          <div class="absolute -inset-4 -z-10 bg-gradient-to-br from-primary/20 via-accent/20 to-transparent blur-2xl opacity-60"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== PRIVACY ====== -->
+  <section class="py-24 bg-white" id="privacy">
+    <div class="max-w-5xl mx-auto px-6 lg:px-8 text-center">
+      <h2 class="font-display text-3xl md:text-4xl font-semibold text-neutral900">Your Paper, Your Data.</h2>
+      <p class="mt-4 text-neutral700 max-w-2xl mx-auto">We only access what you authorize. Delete everything with one click. Run with your own API key (coming soon). We never train on your content without explicit consent.</p>
+
+      <div class="mt-12 grid sm:grid-cols-3 gap-8 text-left">
+        <div class="bg-neutral100 rounded-xl p-6 border border-neutral300">
+          <h4 class="font-semibold mb-2">Controlled Access</h4>
+          <p class="text-sm text-neutral700">We respect OpenReview permissions. Private reviews require your secure token.</p>
+        </div>
+        <div class="bg-neutral100 rounded-xl p-6 border border-neutral300">
+          <h4 class="font-semibold mb-2">Full Deletion</h4>
+          <p class="text-sm text-neutral700">Nuke your data anytime—PDFs, reviews, outputs—gone.</p>
+        </div>
+        <div class="bg-neutral100 rounded-xl p-6 border border-neutral300">
+          <h4 class="font-semibold mb-2">Encryption Everywhere</h4>
+          <p class="text-sm text-neutral700">Data encrypted in transit and at rest.</p>
+        </div>
+      </div>
+
+      <a href="#" class="inline-block mt-10 text-sm text-primary underline hover:text-primaryDark">Read full privacy policy</a>
+    </div>
+  </section>
+
+  <!-- ====== FAQ ====== -->
+  <section class="py-24 bg-neutral100" id="faq">
+    <div class="max-w-4xl mx-auto px-6 lg:px-8">
+      <h2 class="font-display text-3xl md:text-4xl font-semibold text-center text-neutral900">FAQ</h2>
+
+      <div class="mt-12 divide-y divide-neutral300">
+        <!-- Single FAQ -->
+        <details class="group py-6">
+          <summary class="flex cursor-pointer list-none items-center justify-between">
+            <h4 class="font-semibold text-neutral900">Does it work for all OpenReview conferences?</h4>
+            <span class="ml-4 transition-transform group-open:rotate-180">
+              <svg class="w-5 h-5 text-neutral700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </summary>
+          <p class="mt-4 text-sm text-neutral700">Yes—NeurIPS, ICLR, ICML, etc. If some reviews are private, you’ll need to authenticate. We handle tokens securely.</p>
+        </details>
+
+        <details class="group py-6">
+          <summary class="flex cursor-pointer list-none items-center justify-between">
+            <h4 class="font-semibold text-neutral900">How accurate are the AI rebuttals?</h4>
+            <span class="ml-4 transition-transform group-open:rotate-180">
+              <svg class="w-5 h-5 text-neutral700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </summary>
+          <p class="mt-4 text-sm text-neutral700">They’re starting points—concise and context-aware. You still refine the tone, add references, or push back strategically.</p>
+        </details>
+
+        <details class="group py-6">
+          <summary class="flex cursor-pointer list-none items-center justify-between">
+            <h4 class="font-semibold text-neutral900">Can I customize classification labels?</h4>
+            <span class="ml-4 transition-transform group-open:rotate-180">
+              <svg class="w-5 h-5 text-neutral700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </summary>
+          <p class="mt-4 text-sm text-neutral700">Absolutely. Add your own taxonomy—“Needs new experiment,” “Typos,” “Minor wording,” etc.</p>
+        </details>
+
+        <details class="group py-6">
+          <summary class="flex cursor-pointer list-none items-center justify-between">
+            <h4 class="font-semibold text-neutral900">Do I need my own OpenAI key?</h4>
+            <span class="ml-4 transition-transform group-open:rotate-180">
+              <svg class="w-5 h-5 text-neutral700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </summary>
+          <p class="mt-4 text-sm text-neutral700">You can use ours or plug in your own—your choice. (Bring-your-own-key is on the roadmap if not already live.)</p>
+        </details>
+
+        <details class="group py-6">
+          <summary class="flex cursor-pointer list-none items-center justify-between">
+            <h4 class="font-semibold text-neutral900">Can multiple authors edit at once?</h4>
+            <span class="ml-4 transition-transform group-open:rotate-180">
+              <svg class="w-5 h-5 text-neutral700" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </span>
+          </summary>
+          <p class="mt-4 text-sm text-neutral700">Yes—push to Google Sheets or share the CSV/Excel. Assign owners, change statuses, and iterate fast.</p>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== FINAL CTA ====== -->
+  <section class="py-24 bg-white" id="try">
+    <div class="max-w-4xl mx-auto px-6 lg:px-8 text-center">
+      <h2 class="font-display text-3xl md:text-4xl font-semibold text-neutral900">Ready to Focus on Science, Not Spreadsheets?</h2>
+      <p class="mt-4 text-neutral700 max-w-2xl mx-auto">Generate a first draft now. Tweak, not type.</p>
+      <div class="mt-10 flex flex-wrap justify-center gap-4">
+        <a href="#" class="px-6 py-3 rounded-md bg-primary text-white font-medium hover:bg-primaryDark transition shadow-card hover:shadow-hover">Try Free</a>
+        <a href="#sample" class="px-6 py-3 rounded-md border border-primary text-primary font-medium hover:bg-primaryLight transition">See Sample</a>
+      </div>
+
+      <!-- Optional email capture -->
+      <form action="#" method="post" class="mt-12 max-w-md mx-auto flex gap-3">
+        <input type="email" name="email" placeholder="Email for updates (optional)" class="flex-1 px-4 py-3 rounded-md border border-neutral300 focus:outline-none focus:ring-2 focus:ring-primary text-sm" />
+        <button class="px-5 py-3 rounded-md bg-neutral900 text-white text-sm font-medium hover:bg-neutral700 transition">Notify me</button>
+      </form>
+      <p class="mt-3 text-xs text-neutral500">We’ll only email about big releases (e.g., NeurIPS rebuttal season).</p>
+    </div>
+  </section>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="bg-neutral900 text-neutral300 py-12">
+    <div class="max-w-7xl mx-auto px-6 lg:px-8">
+      <div class="md:flex md:justify-between md:items-start gap-12">
+        <div class="mb-8 md:mb-0">
+          <a href="#" class="flex items-center gap-2 font-display text-lg font-semibold text-white">
+            <span class="inline-block w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">OR</span>
+            OpenRebuttal
+          </a>
+          <p class="mt-4 text-sm text-neutral500 max-w-xs">
+            Built by researchers who’ve spent too many nights copy/pasting reviews into Excel.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-8 text-sm">
+          <div>
+            <h5 class="text-white font-semibold mb-3">Product</h5>
+            <ul class="space-y-2">
+              <li><a href="#features" class="hover:text-white">Features</a></li>
+              <li><a href="#how" class="hover:text-white">How it Works</a></li>
+              <li><a href="#sample" class="hover:text-white">Sample Sheet</a></li>
+            </ul>
+          </div>
+          <div>
+            <h5 class="text-white font-semibold mb-3">Company</h5>
+            <ul class="space-y-2">
+              <li><a href="#" class="hover:text-white">About</a></li>
+              <li><a href="#" class="hover:text-white">Contact</a></li>
+            </ul>
+          </div>
+          <div>
+            <h5 class="text-white font-semibold mb-3">Legal</h5>
+            <ul class="space-y-2">
+              <li><a href="#privacy" class="hover:text-white">Privacy</a></li>
+              <li><a href="#" class="hover:text-white">Terms</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-12 border-t border-neutral700 pt-6 text-xs text-neutral500 text-center">
+        © <span id="year"></span> OpenRebuttal. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile nav toggle
+    const mobileBtn = document.getElementById('mobileBtn');
+    const mobileNav = document.getElementById('mobileNav');
+    const menuIcon = document.getElementById('menuIcon');
+    const closeIcon = document.getElementById('closeIcon');
+    mobileBtn.addEventListener('click', () => {
+      mobileNav.classList.toggle('hidden');
+      menuIcon.classList.toggle('hidden');
+      closeIcon.classList.toggle('hidden');
+    });
+
+    // Year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
